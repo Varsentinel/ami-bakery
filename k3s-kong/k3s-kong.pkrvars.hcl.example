@@ -1,0 +1,31 @@
+# Copy to k3s-kong.pkrvars.hcl and edit. *.pkrvars.hcl is gitignored.
+#   packer build -var-file=k3s-kong.pkrvars.hcl .
+
+aws_region      = "us-west-2"
+ami_name_prefix = "k3s-kong"
+
+# "amd64" or "arm64". instance_type is derived when left empty
+# (t3.large / t4g.large).
+architecture  = "amd64"
+instance_type = ""
+
+# Pin these. Both are validated during the build.
+k3s_version        = "v1.37.2+k3s1"
+kong_chart_version = "3.4.1"
+
+# Build-instance placement. Leave empty to use the account's default VPC.
+# vpc_id                      = "vpc-0123456789abcdef0"
+# subnet_id                   = "subnet-0123456789abcdef0"
+# associate_public_ip_address = true
+# ssh_interface               = "public_ip"
+
+# Drop "6443" if the Kubernetes API must not be reachable off-host.
+firewall_tcp_ports = ["22", "80", "443", "6443"]
+
+# ami_regions = ["us-east-1"]
+# ami_users   = ["123456789012"]
+
+extra_tags = {
+  Environment = "shared"
+  Owner       = "platform"
+}

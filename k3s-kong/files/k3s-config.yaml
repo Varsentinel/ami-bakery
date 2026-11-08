@@ -1,0 +1,29 @@
+# /etc/rancher/k3s/config.yaml
+#
+# Baked k3s server configuration. Per-instance values must NOT go here: this
+# file is identical on every machine launched from the AMI. Anything that
+# depends on the instance (TLS SANs, node labels, external IP) is written at
+# first boot into /etc/rancher/k3s/config.yaml.d/ by k3s-tls-san.service.
+
+# Traefik is disabled: Kong Gateway is the ingress controller on this image.
+# k3s drops a .skip file next to the bundled Traefik manifest, so it is never
+# deployed, not even on the very first boot.
+disable:
+  - traefik
+
+# Keep the admin kubeconfig root-only. Relax to "0644" only if you accept that
+# any local user becomes cluster-admin.
+write-kubeconfig-mode: "0600"
+
+# ServiceLB (klipper) stays enabled: it is what publishes the Kong proxy
+# Service on the node's :80 and :443.
+
+# Pods and Services keep the k3s defaults; the ufw rules in 50-firewall.sh
+# reference these CIDRs, so change both together.
+cluster-cidr: 10.42.0.0/16
+service-cidr: 10.43.0.0/16
+
+kubelet-arg:
+  # Reclaim image space before the root volume fills up.
+  - image-gc-high-threshold=80
+  - image-gc-low-threshold=70

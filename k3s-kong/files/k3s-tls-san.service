@@ -1,0 +1,16 @@
+[Unit]
+Description=Generate per-instance k3s configuration (TLS SANs)
+Documentation=https://docs.k3s.io/installation/configuration
+After=network-online.target
+Wants=network-online.target
+Before=k3s.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/k3s-tls-san.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

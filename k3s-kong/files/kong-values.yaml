@@ -1,0 +1,73 @@
+# Values for the kong/kong chart, rendered to static manifests at build time by
+# scripts/20-install-kong.sh. Nothing here is evaluated at run time.
+#
+# Kong Gateway OSS, DB-less, with the Kong Ingress Controller as a sidecar.
+
+image:
+  repository: kong
+  tag: "3.9"
+
+env:
+  database: "off"
+
+replicaCount: 1
+
+deployment:
+  kong:
+    enabled: true
+
+# The proxy Service is a LoadBalancer so that k3s ServiceLB (klipper) binds it
+# to the node's host ports. That is what makes HTTPS ingress arrive on :443 of
+# the instance, with no cloud load balancer required.
+proxy:
+  enabled: true
+  type: LoadBalancer
+  http:
+    enabled: true
+    servicePort: 80
+    containerPort: 8000
+  tls:
+    enabled: true
+    servicePort: 443
+    containerPort: 8443
+    parameters:
+      - http2
+
+# Admin API stays loopback-only inside the pod, reachable by the sidecar
+# controller. Do not expose it.
+admin:
+  enabled: false
+
+# Enterprise-only surfaces.
+manager:
+  enabled: false
+portal:
+  enabled: false
+portalapi:
+  enabled: false
+enterprise:
+  enabled: false
+
+ingressController:
+  enabled: true
+  ingressClass: kong
+  # The IngressClass ships as its own manifest (files/kong-ingressclass.yaml)
+  # so it can carry the is-default-class annotation.
+  createIngressClass: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+# Single-node image: nothing to spread across, and a PDB would block drains.
+podDisruptionBudget:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+serviceMonitor:
+  enabled: false
